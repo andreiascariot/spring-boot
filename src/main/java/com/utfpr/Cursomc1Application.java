@@ -1,5 +1,6 @@
 package com.utfpr;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,20 @@ import com.utfpr.domain.Cidade;
 import com.utfpr.domain.Cliente;
 import com.utfpr.domain.Endereco;
 import com.utfpr.domain.Estado;
+import com.utfpr.domain.Pagamento;
+import com.utfpr.domain.PagamentoComBoleto;
+import com.utfpr.domain.PagamentoComCartao;
+import com.utfpr.domain.Pedido;
 import com.utfpr.domain.Produto;
+import com.utfpr.domain.enums.EstadoPagamento;
 import com.utfpr.domain.enums.TipoCliente;
 import com.utfpr.repositories.CategoriaRepository;
 import com.utfpr.repositories.CidadeRepository;
 import com.utfpr.repositories.ClienteRepository;
 import com.utfpr.repositories.EnderecoRepository;
 import com.utfpr.repositories.EstadoRepository;
+import com.utfpr.repositories.PagamentoRepository;
+import com.utfpr.repositories.PedidoRepository;
 import com.utfpr.repositories.ProdutoRepository;
 
 @SpringBootApplication
@@ -41,6 +49,13 @@ public class Cursomc1Application implements CommandLineRunner{
 	
 	@Autowired
 	private EnderecoRepository enderecoRepository;
+	
+	@Autowired
+	private PedidoRepository pedidoRepository;
+	
+	@Autowired
+	private PagamentoRepository pagamentoRepository;
+	
 	
 	public static void main(String[] args) {
 		SpringApplication.run(Cursomc1Application.class, args);
@@ -79,6 +94,8 @@ public class Cursomc1Application implements CommandLineRunner{
 		estadoRepository.saveAll(Arrays.asList(est1, est2));
 		cidadeRepository.saveAll(Arrays.asList(cid1, cid2, cid3));
 		
+		
+		//cliente, endereco e telefone
 		Cliente cli1 = new Cliente(null, "Maria Silva", "maria@gmail.com", "123456789", TipoCliente.PESSOAFISICA);
 		cli1.getTelefones().addAll(Arrays.asList("465555555", "4644443333"));
 		Endereco end1 = new Endereco(null, "Rua Flores", "4545", "Apto 303", "Jardim", "85503340", cli1, cid1);
@@ -89,6 +106,23 @@ public class Cursomc1Application implements CommandLineRunner{
 		clienteRepository.saveAll(Arrays.asList(cli1));
 		enderecoRepository.saveAll(Arrays.asList(end1, end2));
 		
+		//pedidos e pagamentos
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		Pedido ped1 = new Pedido(null, sdf.parse("03/08/2021 11:30"), cli1, end1);
+		Pedido ped2 = new Pedido(null, sdf.parse("05/08/2021 17:00"), cli1, end2);
+		
+		Pagamento pgto1 = new PagamentoComCartao(null, EstadoPagamento.QUITADO, ped1, 6);
+		ped1.setPagamento(pgto1);
+		
+		Pagamento pgto2 = new PagamentoComBoleto(null, EstadoPagamento.PENDENTE, ped2, sdf.parse("20/10/2021 00:00"), null);
+		ped2.setPagamento(pgto2);
+		
+		cli1.getPedidos().addAll(Arrays.asList(ped1, ped2));
+		
+		pedidoRepository.saveAll(Arrays.asList(ped1, ped2));
+		pagamentoRepository.saveAll(Arrays.asList(pgto1, pgto2));
+		
+	
 	}
 
 }
